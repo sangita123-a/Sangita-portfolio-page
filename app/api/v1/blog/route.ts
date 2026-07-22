@@ -12,6 +12,26 @@ export async function GET(req: NextRequest) {
 
     let blogs: any[] = [];
     try {
+      const count = await prisma.blogPost.count();
+      if (count === 0) {
+        for (const b of initialBlogs) {
+          await prisma.blogPost.create({
+            data: {
+              title: b.title,
+              slug: b.slug || (b.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Date.now()),
+              excerpt: b.excerpt || "",
+              content: b.content || "",
+              coverImage: b.coverImage || "/foodiq-preview.png",
+              category: b.category || "General",
+              tags: b.tags || [],
+              status: b.status || "PUBLISHED",
+              seoTitle: b.seoTitle || b.title,
+              seoDescription: b.seoDescription || b.excerpt,
+            },
+          }).catch(() => {});
+        }
+      }
+
       blogs = await prisma.blogPost.findMany({
         where: {
           AND: [
@@ -30,11 +50,7 @@ export async function GET(req: NextRequest) {
         orderBy: { createdAt: "desc" },
       });
     } catch {
-      blogs = [];
-    }
-
-    if (blogs.length === 0 && !query && !category) {
-      return NextResponse.json(initialBlogs);
+      blogs = initialBlogs;
     }
 
     return NextResponse.json(blogs);
@@ -57,7 +73,7 @@ export async function POST(req: NextRequest) {
         slug,
         excerpt: body.excerpt || "",
         content: body.content || "",
-        coverImage: body.coverImage || "/foodiq-preview.png",
+        coverImage: body.coverImage || "/images/projects/foodiq-preview.png",
         category: body.category || "General",
         tags: body.tags || [],
         status: body.status || "DRAFT",

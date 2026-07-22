@@ -3,7 +3,13 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 
-export default function PhotoFrame() {
+interface PhotoFrameProps {
+  avatarUrl?: string;
+}
+
+export default function PhotoFrame({ avatarUrl }: PhotoFrameProps) {
+  const imgSrc = avatarUrl || "/profile.png";
+
   return (
     <motion.div
       initial={{ opacity: 1, scale: 1 }}
@@ -26,14 +32,23 @@ export default function PhotoFrame() {
       <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,_rgba(0,229,255,0.18),_transparent_65%)]" />
 
       <div className="relative h-[180px] w-[180px] overflow-hidden rounded-full border border-white/15 bg-black/80 shadow-[0_0_16px_rgba(0,0,0,0.35)] lg:h-[240px] lg:w-[240px]">
-        <Image
-          src="/profile.png"
-          alt="Profile photo"
-          fill
-          className="rounded-full object-cover"
-          sizes="(max-width: 768px) 180px, 240px"
-          style={{ objectPosition: "center 18%" }}
-        />
+        {imgSrc.startsWith("http") || imgSrc.startsWith("data:") ? (
+          <img
+            src={imgSrc}
+            alt="Profile photo"
+            className="h-full w-full rounded-full object-cover"
+            style={{ objectPosition: "center 18%" }}
+          />
+        ) : (
+          <Image
+            src={imgSrc}
+            alt="Profile photo"
+            fill
+            className="rounded-full object-cover"
+            sizes="(max-width: 768px) 180px, 240px"
+            style={{ objectPosition: "center 18%" }}
+          />
+        )}
         <div className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-white/10" />
       </div>
     </motion.div>

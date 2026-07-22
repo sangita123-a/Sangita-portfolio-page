@@ -7,12 +7,26 @@ export async function GET() {
   try {
     let list: any[] = [];
     try {
+      const count = await prisma.experience.count();
+      if (count === 0) {
+        for (const item of initialExperience) {
+          await prisma.experience.create({
+            data: {
+              company: item.company,
+              role: item.role,
+              duration: item.duration,
+              description: item.description,
+              order: item.order || 0,
+            },
+          }).catch(() => {});
+        }
+      }
+
       list = await prisma.experience.findMany({ orderBy: { order: "asc" } });
     } catch {
-      list = [];
+      list = initialExperience;
     }
 
-    if (list.length === 0) return NextResponse.json(initialExperience);
     return NextResponse.json(list);
   } catch (error) {
     return NextResponse.json(initialExperience);

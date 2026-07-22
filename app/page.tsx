@@ -7,15 +7,45 @@ import Navbar from "../components/Navbar";
 import PhotoFrame from "../components/PhotoFrame";
 import SocialIcons from "../components/SocialIcons";
 import TypingText from "../components/TypingText";
-import { FaLaptopCode, FaPython, FaEnvelope, FaPhoneAlt, FaMapMarkerAlt, FaGithub, FaInstagram, FaLinkedinIn, FaSearch, FaCheckCircle, FaSpinner } from "react-icons/fa";
-import { initialProfile, initialProjects, initialSkills } from "@/lib/data/initialData";
-
+import {
+  FaLaptopCode,
+  FaPython,
+  FaEnvelope,
+  FaPhoneAlt,
+  FaMapMarkerAlt,
+  FaGithub,
+  FaInstagram,
+  FaLinkedinIn,
+  FaSearch,
+  FaCheckCircle,
+  FaBriefcase,
+  FaGraduationCap,
+  FaCertificate,
+  FaBlog,
+} from "react-icons/fa";
 import { getApiUrl } from "@/lib/apiConfig";
 
 export default function Home() {
-  const [profile, setProfile] = useState(initialProfile);
-  const [projects, setProjects] = useState(initialProjects);
-  const [skills, setSkills] = useState(initialSkills);
+  const [profile, setProfile] = useState<any>({
+    name: "Sangita Sahoo",
+    title: "Full Stack Developer",
+    bio: "Building secure, scalable and modern web applications.",
+    about: "I am a dedicated Full Stack Developer with a strong interest in building modern, responsive, and user-friendly web applications.",
+    location: "Hyderabad, Telangana",
+    email: "ssangitasahoo48@gmail.com",
+    phone: "+91 63711 15043",
+    avatarUrl: "/profile.png",
+    githubUrl: "https://github.com/sangita123-a",
+    linkedinUrl: "https://linkedin.com",
+    instagramUrl: "https://instagram.com",
+  });
+
+  const [projects, setProjects] = useState<any[]>([]);
+  const [skills, setSkills] = useState<any[]>([]);
+  const [experienceList, setExperienceList] = useState<any[]>([]);
+  const [educationList, setEducationList] = useState<any[]>([]);
+  const [certificatesList, setCertificatesList] = useState<any[]>([]);
+  const [blogList, setBlogList] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Contact Form State
@@ -28,28 +58,66 @@ export default function Home() {
 
   useEffect(() => {
     // Analytics Visit Logging
-    fetch(getApiUrl("/api/analytics"), {
+    fetch(getApiUrl("/api/v1/analytics"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "VISIT", metadata: { referrer: document.referrer || "direct" } }),
+      body: JSON.stringify({ type: "VISIT", metadata: { referrer: typeof document !== "undefined" ? document.referrer || "direct" : "direct" } }),
     }).catch(() => {});
 
-    // Fetch Profile
-    fetch(getApiUrl("/api/profile"))
+    // Fetch Profile from PostgreSQL
+    fetch(getApiUrl("/api/v1/profile"))
       .then((res) => res.json())
-      .then((data) => { if (data && !data.error) setProfile(data); })
+      .then((data) => {
+        if (data && !data.error) setProfile(data);
+      })
       .catch(() => {});
 
-    // Fetch Projects
-    fetch(getApiUrl("/api/projects"))
+    // Fetch Projects from PostgreSQL
+    fetch(getApiUrl("/api/v1/projects"))
       .then((res) => res.json())
-      .then((data) => { if (Array.isArray(data) && data.length > 0) setProjects(data); })
+      .then((data) => {
+        if (Array.isArray(data)) setProjects(data);
+      })
       .catch(() => {});
 
-    // Fetch Skills
-    fetch(getApiUrl("/api/skills"))
+    // Fetch Skills from PostgreSQL
+    fetch(getApiUrl("/api/v1/skills"))
       .then((res) => res.json())
-      .then((data) => { if (Array.isArray(data) && data.length > 0) setSkills(data); })
+      .then((data) => {
+        if (Array.isArray(data)) setSkills(data);
+      })
+      .catch(() => {});
+
+    // Fetch Experience from PostgreSQL
+    fetch(getApiUrl("/api/v1/experience"))
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setExperienceList(data);
+      })
+      .catch(() => {});
+
+    // Fetch Education from PostgreSQL
+    fetch(getApiUrl("/api/v1/education"))
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setEducationList(data);
+      })
+      .catch(() => {});
+
+    // Fetch Certificates from PostgreSQL
+    fetch(getApiUrl("/api/v1/certificates"))
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setCertificatesList(data);
+      })
+      .catch(() => {});
+
+    // Fetch Blogs from PostgreSQL
+    fetch(getApiUrl("/api/v1/blog"))
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setBlogList(data);
+      })
       .catch(() => {});
   }, []);
 
@@ -58,7 +126,7 @@ export default function Home() {
     setFormStatus({ loading: true, success: false, error: "" });
 
     try {
-      const res = await fetch(getApiUrl("/api/contact"), {
+      const res = await fetch(getApiUrl("/api/v1/contact"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(contactForm),
@@ -77,13 +145,19 @@ export default function Home() {
   const filteredProjects = projects.filter((p) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
-    return p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || p.badge.toLowerCase().includes(q);
+    return (
+      (p.title && p.title.toLowerCase().includes(q)) ||
+      (p.description && p.description.toLowerCase().includes(q)) ||
+      (p.badge && p.badge.toLowerCase().includes(q)) ||
+      (Array.isArray(p.techStack) && p.techStack.some((t: string) => t.toLowerCase().includes(q)))
+    );
   });
 
   return (
     <main id="home" className="min-h-screen bg-black text-white">
       <Navbar />
 
+      {/* Hero Section */}
       <section className="relative overflow-hidden px-6 py-28 sm:px-8 lg:px-12 lg:py-32">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(0,229,255,0.16),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(217,70,239,0.15),_transparent_35%)]" />
 
@@ -101,14 +175,19 @@ export default function Home() {
               {profile.name}
             </h1>
             <p className="mt-4 text-2xl font-medium text-white/80 sm:text-3xl">
-              And I&apos;m a <TypingText />
+              And I&apos;m a <TypingText title={profile.title} />
             </p>
             <p className="mt-6 max-w-xl text-lg leading-8 text-white/70">
               {profile.bio || "Building secure, scalable and modern web applications. Turning ideas into powerful digital solutions."}
             </p>
 
             <div className="mt-8 h-px w-32 bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-transparent" />
-            <SocialIcons />
+            <SocialIcons
+              githubUrl={profile.githubUrl}
+              linkedinUrl={profile.linkedinUrl}
+              instagramUrl={profile.instagramUrl}
+              twitterUrl={profile.twitterUrl}
+            />
           </motion.div>
 
           <motion.div
@@ -117,11 +196,12 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="flex justify-center lg:justify-end"
           >
-            <PhotoFrame />
+            <PhotoFrame avatarUrl={profile.avatarUrl} />
           </motion.div>
         </div>
       </section>
 
+      {/* About Section */}
       <section id="about" className="bg-black py-[100px]">
         <div className="mx-auto max-w-[1200px] px-6 sm:px-8 lg:px-12">
           <motion.div
@@ -145,7 +225,7 @@ export default function Home() {
 
             <div className="mt-10">
               <p className="text-2xl font-bold text-white">{profile.title}</p>
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300 sm:text-xl">
+              <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300 sm:text-xl whitespace-pre-wrap">
                 {profile.about || "I am a dedicated Full Stack Developer with a strong interest in building modern, responsive, and user-friendly web applications."}
               </p>
             </div>
@@ -153,7 +233,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="services" className="relative lg:h-screen bg-[#000000] py-[100px] lg:py-0 flex items-center justify-center transition-colors duration-300 overflow-hidden">
+      {/* Services Section */}
+      <section id="services" className="relative lg:min-h-screen bg-[#000000] py-[100px] flex items-center justify-center transition-colors duration-300 overflow-hidden">
         <div className="mx-auto max-w-[1200px] w-full px-6 sm:px-8 lg:px-12 flex flex-col justify-center">
           <motion.div
             initial={{ opacity: 0, y: 35 }}
@@ -195,9 +276,6 @@ export default function Home() {
                   <li className="flex items-center"><span className="text-[#00CAFF] mr-2">•</span> Responsive UI</li>
                 </ul>
               </div>
-              <button className="mt-6 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] px-5 py-2.5 text-xs font-semibold text-black shadow-[0_0_15px_rgba(0,202,255,0.2)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,202,255,0.45)] hover:scale-[1.02] hover:brightness-110">
-                Learn More
-              </button>
             </motion.div>
 
             {/* Full Stack Development Card */}
@@ -215,18 +293,15 @@ export default function Home() {
                 <p className="text-[10px] uppercase tracking-[0.3em] text-[#00CAFF] font-semibold">Full Stack Development</p>
                 <h3 className="mt-2 text-lg font-bold text-white leading-snug">Modern &amp; Scalable Web Solutions</h3>
                 <p className="mt-2.5 text-xs lg:text-sm leading-relaxed text-[#94A3B8]">
-                  Building responsive, secure, and scalable web applications using modern frontend and backend technologies.
+                  Building responsive, secure, and scalable web applications using Next.js, Node.js, Express, and PostgreSQL.
                 </p>
                 <ul className="mt-4 space-y-2 text-xs leading-normal text-[#E0E0E0]">
                   <li className="flex items-center"><span className="text-[#00CAFF] mr-2">•</span> React.js / Next.js Development</li>
-                  <li className="flex items-center"><span className="text-[#00CAFF] mr-2">•</span> HTML5, CSS3 &amp; JavaScript</li>
-                  <li className="flex items-center"><span className="text-[#00CAFF] mr-2">•</span> Python &amp; Node.js Backend</li>
+                  <li className="flex items-center"><span className="text-[#00CAFF] mr-2">•</span> Node.js &amp; Express Backend</li>
+                  <li className="flex items-center"><span className="text-[#00CAFF] mr-2">•</span> PostgreSQL &amp; Prisma ORM</li>
                   <li className="flex items-center"><span className="text-[#00CAFF] mr-2">•</span> REST API Development</li>
                 </ul>
               </div>
-              <button className="mt-6 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] px-5 py-2.5 text-xs font-semibold text-black shadow-[0_0_15px_rgba(0,202,255,0.2)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,202,255,0.45)] hover:scale-[1.02] hover:brightness-110">
-                Learn More
-              </button>
             </motion.div>
 
             {/* AI & Automation Card */}
@@ -244,7 +319,7 @@ export default function Home() {
                 <p className="text-[10px] uppercase tracking-[0.3em] text-[#00CAFF] font-semibold">AI &amp; Automation</p>
                 <h3 className="mt-2 text-lg font-bold text-white leading-snug">Intelligent Solutions Powered by AI</h3>
                 <p className="mt-2.5 text-xs lg:text-sm leading-relaxed text-[#94A3B8]">
-                  Building intelligent AI applications using LLMs, prompt engineering, APIs, and workflow automation to solve real-world problems.
+                  Building intelligent AI applications using LLMs, APIs, and workflow automation to solve real-world problems.
                 </p>
                 <ul className="mt-4 space-y-2 text-xs leading-normal text-[#E0E0E0]">
                   <li className="flex items-center"><span className="text-[#00CAFF] mr-2">•</span> AI Chatbots &amp; Multi-Agents</li>
@@ -253,15 +328,13 @@ export default function Home() {
                   <li className="flex items-center"><span className="text-[#00CAFF] mr-2">•</span> Workflow Automation</li>
                 </ul>
               </div>
-              <button className="mt-6 inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] px-5 py-2.5 text-xs font-semibold text-black shadow-[0_0_15px_rgba(0,202,255,0.2)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,202,255,0.45)] hover:scale-[1.02] hover:brightness-110">
-                Learn More
-              </button>
             </motion.div>
           </div>
         </div>
       </section>
 
-      <section id="skills" className="relative lg:h-screen bg-[#0B0C10] py-[100px] lg:py-0 flex items-center justify-center transition-colors duration-300 overflow-hidden">
+      {/* Skills Section */}
+      <section id="skills" className="relative lg:min-h-screen bg-[#0B0C10] py-[100px] flex items-center justify-center transition-colors duration-300 overflow-hidden">
         <div className="mx-auto max-w-[1200px] w-full px-6 sm:px-8 lg:px-12 flex flex-col justify-center">
           <motion.div
             initial={{ opacity: 0, y: 35 }}
@@ -279,7 +352,6 @@ export default function Home() {
           </motion.div>
 
           <div className="grid gap-6 md:grid-cols-2 w-full items-stretch">
-            {/* Left Card: Web Development */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -291,14 +363,13 @@ export default function Home() {
                 <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[#00CAFF]/10 text-[#00CAFF] shadow-[0_0_20px_rgba(0,202,255,0.15)] transition-transform duration-300 group-hover:scale-105">
                   <FaLaptopCode size={22} />
                 </div>
-                <h3 className="text-xl font-bold text-white tracking-wide">Web Development</h3>
+                <h3 className="text-xl font-bold text-white tracking-wide">Web &amp; Technical Skills</h3>
                 <p className="mt-2 text-xs lg:text-sm leading-relaxed text-[#94A3B8]">
-                  Proficient in building responsive and modern web applications using HTML, CSS, JavaScript, React, and PostgreSQL.
+                  Proficient in building responsive and modern web applications using PostgreSQL, Next.js, React, Node.js, and TypeScript.
                 </p>
 
-                {/* Dynamic Progress Bars */}
                 <div className="mt-6 space-y-3.5">
-                  {skills.slice(0, 4).map((s) => (
+                  {skills.slice(0, Math.ceil(skills.length / 2)).map((s) => (
                     <div key={s.id || s.name}>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-[#E0E0E0] font-medium">{s.name}</span>
@@ -313,7 +384,6 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Right Card: Python & Backend */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -325,13 +395,13 @@ export default function Home() {
                 <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[#00CAFF]/10 text-[#00CAFF] shadow-[0_0_20px_rgba(0,202,255,0.15)] transition-transform duration-300 group-hover:scale-105">
                   <FaPython size={22} />
                 </div>
-                <h3 className="text-xl font-bold text-white tracking-wide">Basics of Python</h3>
+                <h3 className="text-xl font-bold text-white tracking-wide">Backend &amp; Databases</h3>
                 <p className="mt-2 text-xs lg:text-sm leading-relaxed text-[#94A3B8]">
-                  Strong foundation in Python programming, including variables, data types, operators, loops, functions, and backend scripting.
+                  Database management, REST API engineering, authentication systems, and cloud uploads.
                 </p>
 
                 <div className="mt-6 space-y-3.5">
-                  {(skills.length > 4 ? skills.slice(4, 8) : skills.slice(0, 4)).map((s) => (
+                  {skills.slice(Math.ceil(skills.length / 2)).map((s) => (
                     <div key={s.id || s.name}>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-[#E0E0E0] font-medium">{s.name}</span>
@@ -367,7 +437,6 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Search Input for Projects */}
           <div className="mb-8 max-w-sm mx-auto relative">
             <input
               type="text"
@@ -392,12 +461,10 @@ export default function Home() {
                 <div>
                   <div className="relative h-36 sm:h-40 bg-gradient-to-br from-[#00CAFF]/20 to-black p-4 sm:p-5 flex flex-col justify-between overflow-hidden">
                     {p.thumbnailUrl && (
-                      <Image
+                      <img
                         src={p.thumbnailUrl}
                         alt={p.title}
-                        fill
-                        unoptimized
-                        className="object-cover object-top opacity-40 group-hover:scale-105 transition-transform duration-500"
+                        className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-500"
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0B111E] via-[#0B111E]/40 to-transparent" />
@@ -410,26 +477,42 @@ export default function Home() {
                   </div>
                   <div className="p-4 sm:p-5">
                     <p className="text-xs sm:text-sm leading-relaxed text-[#94A3B8]">{p.description}</p>
+                    {Array.isArray(p.techStack) && p.techStack.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {p.techStack.map((tech: string) => (
+                          <span
+                            key={tech}
+                            className="text-[10px] font-mono text-cyan-300 bg-[#00CAFF]/10 px-2 py-0.5 rounded border border-[#00CAFF]/20"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="p-4 sm:p-5 pt-0">
                   <div className="flex gap-3">
-                    <a
-                      href={p.demoUrl || "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-semibold text-white bg-[#00CAFF]/10 border border-[#00CAFF]/20 py-1.5 px-3.5 rounded-lg hover:bg-[#00CAFF]/20 transition-all duration-300"
-                    >
-                      Live Demo
-                    </a>
-                    <a
-                      href={p.githubUrl || "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-semibold text-[#94A3B8] py-1.5 px-3.5 rounded-lg hover:text-white transition-all duration-300"
-                    >
-                      GitHub
-                    </a>
+                    {p.demoUrl && (
+                      <a
+                        href={p.demoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-semibold text-white bg-[#00CAFF]/10 border border-[#00CAFF]/20 py-1.5 px-3.5 rounded-lg hover:bg-[#00CAFF]/20 transition-all duration-300"
+                      >
+                        Live Demo
+                      </a>
+                    )}
+                    {p.githubUrl && (
+                      <a
+                        href={p.githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-semibold text-[#94A3B8] py-1.5 px-3.5 rounded-lg hover:text-white transition-all duration-300"
+                      >
+                        GitHub
+                      </a>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -438,8 +521,134 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Experience Section */}
+      {experienceList.length > 0 && (
+        <section id="experience" className="bg-[#0B0C10] py-[80px]">
+          <div className="mx-auto max-w-[1020px] px-6 sm:px-8 lg:px-12">
+            <div className="text-center mb-10">
+              <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+                Work <span className="text-[#00CAFF]">Experience</span>
+              </h2>
+              <div className="mx-auto mt-2.5 h-1 w-20 rounded-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8]" />
+            </div>
+
+            <div className="space-y-6 max-w-3xl mx-auto">
+              {experienceList.map((item) => (
+                <div key={item.id} className="rounded-2xl border border-[#00CAFF]/15 bg-[#0B111E] p-6 space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <h3 className="text-lg font-bold text-white">{item.role}</h3>
+                    <span className="text-xs font-semibold text-[#00CAFF] bg-[#00CAFF]/10 px-3 py-1 rounded-full border border-[#00CAFF]/20">
+                      {item.company}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 font-medium">{item.duration}</p>
+                  <p className="text-xs text-[#94A3B8] leading-relaxed whitespace-pre-wrap">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Education Section */}
+      {educationList.length > 0 && (
+        <section id="education" className="bg-black py-[80px]">
+          <div className="mx-auto max-w-[1020px] px-6 sm:px-8 lg:px-12">
+            <div className="text-center mb-10">
+              <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+                My <span className="text-[#00CAFF]">Education</span>
+              </h2>
+              <div className="mx-auto mt-2.5 h-1 w-20 rounded-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8]" />
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
+              {educationList.map((item) => (
+                <div key={item.id} className="rounded-2xl border border-[#00CAFF]/15 bg-[#0B111E] p-6 space-y-2">
+                  <h3 className="text-base font-bold text-white">{item.degree}</h3>
+                  <p className="text-xs font-semibold text-[#00CAFF]">{item.university}</p>
+                  <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-[#00CAFF]/10">
+                    <span>Duration: {item.duration}</span>
+                    <span>Grade: {item.cgpa}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Certificates Section */}
+      {certificatesList.length > 0 && (
+        <section id="certificates" className="bg-[#0B0C10] py-[80px]">
+          <div className="mx-auto max-w-[1020px] px-6 sm:px-8 lg:px-12">
+            <div className="text-center mb-10">
+              <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+                Certifications &amp; <span className="text-[#00CAFF]">Achievements</span>
+              </h2>
+              <div className="mx-auto mt-2.5 h-1 w-20 rounded-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8]" />
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3 max-w-4xl mx-auto">
+              {certificatesList.map((item) => (
+                <div key={item.id} className="rounded-2xl border border-[#00CAFF]/15 bg-[#0B111E] p-5 flex flex-col justify-between space-y-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-white">{item.title}</h3>
+                    <p className="text-xs text-[#00CAFF] font-semibold mt-1">{item.issuer}</p>
+                    <p className="text-[11px] text-gray-400 mt-2">Issued: {item.issueDate}</p>
+                  </div>
+                  {item.fileUrl && (
+                    <a
+                      href={item.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-black bg-gradient-to-r from-[#00CAFF] to-[#00E5FF] py-2 px-4 rounded-xl hover:scale-[1.02] transition-transform"
+                    >
+                      <FaCertificate size={12} /> View Certificate
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Blogs Section */}
+      {blogList.length > 0 && (
+        <section id="blog" className="bg-black py-[80px]">
+          <div className="mx-auto max-w-[1020px] px-6 sm:px-8 lg:px-12">
+            <div className="text-center mb-10">
+              <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+                Latest <span className="text-[#00CAFF]">Blog Posts</span>
+              </h2>
+              <div className="mx-auto mt-2.5 h-1 w-20 rounded-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8]" />
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
+              {blogList.map((b) => (
+                <div key={b.id} className="rounded-2xl border border-[#00CAFF]/15 bg-[#0B111E] p-6 flex flex-col justify-between space-y-4">
+                  <div>
+                    {b.coverImage && (
+                      <img src={b.coverImage} alt={b.title} className="h-40 w-full object-cover rounded-xl mb-3 border border-white/5" />
+                    )}
+                    <span className="text-[10px] font-bold text-[#00CAFF] uppercase tracking-wider bg-[#00CAFF]/10 px-2.5 py-0.5 rounded-full border border-[#00CAFF]/20">
+                      {b.category}
+                    </span>
+                    <h3 className="text-lg font-bold text-white mt-2 leading-snug">{b.title}</h3>
+                    <p className="text-xs text-[#94A3B8] mt-2 line-clamp-3 leading-relaxed">{b.excerpt}</p>
+                  </div>
+                  <div className="pt-3 border-t border-[#00CAFF]/10 flex items-center justify-between text-xs">
+                    <span className="text-gray-400">{new Date(b.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Contact Section */}
-      <section id="contact" className="relative lg:h-screen bg-gradient-to-b from-[#0B0C10] to-[#050608] py-[100px] lg:py-0 flex items-center justify-center transition-colors duration-300 overflow-hidden">
+      <section id="contact" className="relative lg:min-h-screen bg-gradient-to-b from-[#0B0C10] to-[#050608] py-[100px] flex items-center justify-center transition-colors duration-300 overflow-hidden">
         <div className="mx-auto max-w-[1100px] w-full px-6 sm:px-8 lg:px-12">
           <div className="grid gap-8 lg:grid-cols-2 items-center">
             
@@ -621,13 +830,7 @@ export default function Home() {
                     disabled={formStatus.loading}
                     className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#00CAFF] to-[#00E5FF] py-3 text-sm font-bold text-black shadow-[0_0_15px_rgba(0,202,255,0.2)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,202,255,0.5)] hover:scale-[1.01] hover:brightness-110 disabled:opacity-50"
                   >
-                    {formStatus.loading ? (
-                      <>
-                        <FaSpinner className="animate-spin" /> Sending...
-                      </>
-                    ) : (
-                      "Submit Message"
-                    )}
+                    {formStatus.loading ? "Sending..." : "Submit Message"}
                   </button>
                 </form>
               )}

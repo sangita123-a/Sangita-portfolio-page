@@ -5,8 +5,13 @@ import { initialProfile } from "@/lib/data/initialData";
 
 export async function GET() {
   try {
-    const profile = await prisma.profile.findFirst();
-    return NextResponse.json(profile || initialProfile);
+    let profile = await prisma.profile.findFirst();
+    if (!profile) {
+      profile = await prisma.profile.create({
+        data: initialProfile,
+      });
+    }
+    return NextResponse.json(profile);
   } catch (error) {
     return NextResponse.json(initialProfile);
   }

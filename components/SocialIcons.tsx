@@ -1,15 +1,28 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { FaGithub, FaInstagram, FaLinkedinIn } from "react-icons/fa";
+import { FaGithub, FaInstagram, FaLinkedinIn, FaTwitter } from "react-icons/fa";
 
-const socials = [
-  { icon: FaGithub, label: "GitHub", href: "https://github.com" },
-  { icon: FaInstagram, label: "Instagram", href: "https://instagram.com" },
-  { icon: FaLinkedinIn, label: "LinkedIn", href: "https://linkedin.com" },
-];
+interface SocialIconsProps {
+  githubUrl?: string;
+  linkedinUrl?: string;
+  instagramUrl?: string;
+  twitterUrl?: string;
+}
 
-export default function SocialIcons() {
+export default function SocialIcons({
+  githubUrl,
+  linkedinUrl,
+  instagramUrl,
+  twitterUrl,
+}: SocialIconsProps) {
+  const socials = [
+    { icon: FaGithub, label: "GitHub", href: githubUrl || "https://github.com/sangita123-a" },
+    { icon: FaInstagram, label: "Instagram", href: instagramUrl || "https://instagram.com" },
+    { icon: FaLinkedinIn, label: "LinkedIn", href: linkedinUrl || "https://linkedin.com" },
+    ...(twitterUrl ? [{ icon: FaTwitter, label: "Twitter", href: twitterUrl }] : []),
+  ];
+
   return (
     <div className="mt-8 flex items-center gap-4">
       {socials.map((item, index) => {

@@ -7,11 +7,27 @@ export async function GET() {
   try {
     let list: any[] = [];
     try {
+      const count = await prisma.certificate.count();
+      if (count === 0) {
+        for (const item of initialCertificates) {
+          await prisma.certificate.create({
+            data: {
+              title: item.title,
+              issuer: item.issuer,
+              issueDate: item.issueDate || "2023",
+              fileUrl: item.fileUrl || "/resume-sample.pdf",
+              downloadUrl: item.downloadUrl || item.fileUrl || "/resume-sample.pdf",
+              order: item.order || 0,
+            },
+          }).catch(() => {});
+        }
+      }
+
       list = await prisma.certificate.findMany({ orderBy: { order: "asc" } });
     } catch {
-      list = [];
+      list = initialCertificates;
     }
-    if (list.length === 0) return NextResponse.json(initialCertificates);
+
     return NextResponse.json(list);
   } catch (error) {
     return NextResponse.json(initialCertificates);

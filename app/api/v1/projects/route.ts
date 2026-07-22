@@ -11,28 +11,27 @@ export async function GET(req: NextRequest) {
 
     let projects: any[] = [];
     try {
-      // Auto-insert Foodiq into DB if missing
-      const foodiqExists = await prisma.project.findFirst({
-        where: { title: { contains: "Foodiq", mode: "insensitive" } },
-      });
-
-      if (!foodiqExists) {
-        await prisma.project.create({
-          data: {
-            title: "Foodiq",
-            slug: "foodiq",
-            badge: "Full Stack Food Delivery Platform",
-            description: "Foodiq is a modern food delivery platform inspired by Swiggy and Zomato. It includes restaurant discovery, trending dishes, food categories, offers, cart, authentication, responsive UI, and a premium user experience.",
-            techStack: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Node.js", "Express.js", "PostgreSQL", "Prisma", "JWT", "Socket.IO"],
-            thumbnailUrl: "/images/projects/foodiq-preview.png",
-            screenshots: ["/images/projects/foodiq-preview.png"],
-            demoUrl: "https://foodiq-ecru.vercel.app/",
-            githubUrl: "https://github.com/sangita123-a/foodiq",
-            featured: true,
-            hidden: false,
-            order: 2,
-          },
-        }).catch(() => {});
+      const count = await prisma.project.count();
+      if (count === 0) {
+        // Seed database once with initial projects
+        for (const p of initialProjects) {
+          await prisma.project.create({
+            data: {
+              title: p.title,
+              slug: p.slug || (p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Date.now()),
+              badge: p.badge || "Full Stack Web Application",
+              description: p.description || "",
+              techStack: p.techStack || [],
+              thumbnailUrl: p.thumbnailUrl || "",
+              screenshots: p.screenshots || [],
+              demoUrl: p.demoUrl || "#",
+              githubUrl: p.githubUrl || "#",
+              featured: p.featured ?? true,
+              hidden: p.hidden ?? false,
+              order: p.order ?? 0,
+            },
+          }).catch(() => {});
+        }
       }
 
       projects = await prisma.project.findMany({
@@ -51,19 +50,9 @@ export async function GET(req: NextRequest) {
         },
         orderBy: { order: "asc" },
       });
-    } catch {
-      projects = [];
-    }
-
-    if (projects.length === 0 && !query) {
-      return NextResponse.json(initialProjects);
-    }
-
-    // Ensure Foodiq is included in projects array
-    const hasFoodiq = projects.some((p) => p.title?.toLowerCase().includes("foodiq"));
-    if (!hasFoodiq && !query) {
-      const foodiqInitial = initialProjects.find((p) => p.title.toLowerCase().includes("foodiq"));
-      if (foodiqInitial) projects.push(foodiqInitial);
+    } catch (e) {
+      console.error("Prisma projects error:", e);
+      projects = initialProjects;
     }
 
     return NextResponse.json(projects);

@@ -2,31 +2,34 @@
 
 import { useEffect, useState } from "react";
 
-const title = "Web Developer";
+interface TypingTextProps {
+  title?: string;
+}
 
-export default function TypingText() {
+export default function TypingText({ title = "Full Stack Developer" }: TypingTextProps) {
   const [text, setText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
+    const currentTitle = title || "Full Stack Developer";
     const typingSpeed = isDeleting ? 70 : 110;
 
     const timeout = setTimeout(() => {
       if (!isDeleting) {
-        setText(title.slice(0, text.length + 1));
+        setText(currentTitle.slice(0, text.length + 1));
       } else {
-        setText(title.slice(0, text.length - 1));
+        setText(currentTitle.slice(0, text.length - 1));
       }
 
-      if (!isDeleting && text === title) {
-        setTimeout(() => setIsDeleting(true), 1200);
+      if (!isDeleting && text === currentTitle) {
+        setTimeout(() => setIsDeleting(true), 1500);
       } else if (isDeleting && text === "") {
         setIsDeleting(false);
       }
     }, typingSpeed);
 
     return () => clearTimeout(timeout);
-  }, [text, isDeleting]);
+  }, [text, isDeleting, title]);
 
   return (
     <span className="inline-block min-h-[2.2rem] text-cyan-400">

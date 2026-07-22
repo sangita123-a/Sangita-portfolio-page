@@ -7,12 +7,26 @@ export async function GET() {
   try {
     let list: any[] = [];
     try {
+      const count = await prisma.education.count();
+      if (count === 0) {
+        for (const item of initialEducation) {
+          await prisma.education.create({
+            data: {
+              university: item.university,
+              degree: item.degree,
+              cgpa: item.cgpa,
+              duration: item.duration,
+              order: item.order || 0,
+            },
+          }).catch(() => {});
+        }
+      }
+
       list = await prisma.education.findMany({ orderBy: { order: "asc" } });
     } catch {
-      list = [];
+      list = initialEducation;
     }
 
-    if (list.length === 0) return NextResponse.json(initialEducation);
     return NextResponse.json(list);
   } catch (error) {
     return NextResponse.json(initialEducation);
