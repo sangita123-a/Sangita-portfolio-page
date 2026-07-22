@@ -116,7 +116,7 @@ app.get(["/api/projects", "/api/v1/projects"], async (req, res) => {
       }
     } catch {}
 
-    const projects = await prisma.project.findMany({
+    let projectsList: any[] = await prisma.project.findMany({
       where: {
         AND: [
           showHidden ? {} : { hidden: false },
@@ -133,17 +133,17 @@ app.get(["/api/projects", "/api/v1/projects"], async (req, res) => {
       orderBy: { order: "asc" },
     });
 
-    if (projects.length === 0 && !query) {
+    if (projectsList.length === 0 && !query) {
       return res.json(initialProjects);
     }
 
-    const hasFoodiq = projects.some((p) => p.title?.toLowerCase().includes("foodiq"));
+    const hasFoodiq = projectsList.some((p) => p.title?.toLowerCase().includes("foodiq"));
     if (!hasFoodiq && !query) {
       const foodiqInitial = initialProjects.find((p) => p.title.toLowerCase().includes("foodiq"));
-      if (foodiqInitial) projects.push(foodiqInitial);
+      if (foodiqInitial) projectsList.push(foodiqInitial);
     }
 
-    res.json(projects);
+    res.json(projectsList);
   } catch {
     res.json(initialProjects);
   }
