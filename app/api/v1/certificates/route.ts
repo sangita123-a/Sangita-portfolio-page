@@ -5,7 +5,7 @@ import { initialCertificates } from "@/lib/data/initialData";
 
 export async function GET() {
   try {
-    let list = [];
+    let list: any[] = [];
     try {
       list = await prisma.certificate.findMany({ orderBy: { order: "asc" } });
     } catch {

@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get("category") || "";
     const includeDrafts = searchParams.get("includeDrafts") === "true";
 
-    let blogs = [];
+    let blogs: any[] = [];
     try {
       blogs = await prisma.blogPost.findMany({
         where: {

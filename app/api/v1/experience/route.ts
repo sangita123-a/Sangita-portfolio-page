@@ -5,7 +5,7 @@ import { initialExperience } from "@/lib/data/initialData";
 
 export async function GET() {
   try {
-    let list = [];
+    let list: any[] = [];
     try {
       list = await prisma.experience.findMany({ orderBy: { order: "asc" } });
     } catch {

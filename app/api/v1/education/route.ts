@@ -5,7 +5,7 @@ import { initialEducation } from "@/lib/data/initialData";
 
 export async function GET() {
   try {
-    let list = [];
+    let list: any[] = [];
     try {
       list = await prisma.education.findMany({ orderBy: { order: "asc" } });
     } catch {

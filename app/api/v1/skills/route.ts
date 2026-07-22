@@ -5,7 +5,7 @@ import { initialSkills } from "@/lib/data/initialData";
 
 export async function GET() {
   try {
-    let skills = [];
+    let skills: any[] = [];
     try {
       skills = await prisma.skill.findMany({
         orderBy: { order: "asc" },

@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     const query = searchParams.get("query") || "";
     const showHidden = searchParams.get("includeHidden") === "true";
 
-    let projects = [];
+    let projects: any[] = [];
     try {
       projects = await prisma.project.findMany({
         where: {
