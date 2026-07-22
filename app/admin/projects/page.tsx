@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FaPlus, FaTrash, FaEdit, FaEye, FaEyeSlash, FaStar, FaExternalLinkAlt, FaGithub, FaCloudUploadAlt } from "react-icons/fa";
+import { getApiUrl } from "@/lib/apiConfig";
 
 interface Project {
   id: string;
@@ -34,7 +35,7 @@ export default function AdminProjects() {
   });
 
   const fetchProjects = () => {
-    fetch("/api/v1/projects?includeHidden=true")
+    fetch(getApiUrl("/api/projects?includeHidden=true"))
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setProjects(data);
@@ -84,7 +85,7 @@ export default function AdminProjects() {
       techStack: form.techStack.split(",").map((s) => s.trim()).filter(Boolean),
     };
 
-    const url = editingId ? `/api/v1/projects/${editingId}` : "/api/v1/projects";
+    const url = editingId ? getApiUrl(`/api/projects/${editingId}`) : getApiUrl("/api/projects");
     const method = editingId ? "PUT" : "POST";
 
     await fetch(url, {
@@ -102,7 +103,7 @@ export default function AdminProjects() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this project?")) return;
-    await fetch(`/api/v1/projects/${id}`, {
+    await fetch(getApiUrl(`/api/projects/${id}`), {
       method: "DELETE",
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
@@ -110,7 +111,7 @@ export default function AdminProjects() {
   };
 
   const toggleHide = async (p: Project) => {
-    await fetch(`/api/v1/projects/${p.id}`, {
+    await fetch(getApiUrl(`/api/projects/${p.id}`), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -122,7 +123,7 @@ export default function AdminProjects() {
   };
 
   const toggleFeature = async (p: Project) => {
-    await fetch(`/api/v1/projects/${p.id}`, {
+    await fetch(getApiUrl(`/api/projects/${p.id}`), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

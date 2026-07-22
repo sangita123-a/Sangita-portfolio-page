@@ -10,6 +10,8 @@ import TypingText from "../components/TypingText";
 import { FaLaptopCode, FaPython, FaEnvelope, FaPhoneAlt, FaMapMarkerAlt, FaGithub, FaInstagram, FaLinkedinIn, FaSearch, FaCheckCircle, FaSpinner } from "react-icons/fa";
 import { initialProfile, initialProjects, initialSkills } from "@/lib/data/initialData";
 
+import { getApiUrl } from "@/lib/apiConfig";
+
 export default function Home() {
   const [profile, setProfile] = useState(initialProfile);
   const [projects, setProjects] = useState(initialProjects);
@@ -26,26 +28,26 @@ export default function Home() {
 
   useEffect(() => {
     // Analytics Visit Logging
-    fetch("/api/v1/analytics", {
+    fetch(getApiUrl("/api/analytics"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type: "VISIT", metadata: { referrer: document.referrer || "direct" } }),
     }).catch(() => {});
 
     // Fetch Profile
-    fetch("/api/v1/profile")
+    fetch(getApiUrl("/api/profile"))
       .then((res) => res.json())
       .then((data) => { if (data && !data.error) setProfile(data); })
       .catch(() => {});
 
     // Fetch Projects
-    fetch("/api/v1/projects")
+    fetch(getApiUrl("/api/projects"))
       .then((res) => res.json())
       .then((data) => { if (Array.isArray(data) && data.length > 0) setProjects(data); })
       .catch(() => {});
 
     // Fetch Skills
-    fetch("/api/v1/skills")
+    fetch(getApiUrl("/api/skills"))
       .then((res) => res.json())
       .then((data) => { if (Array.isArray(data) && data.length > 0) setSkills(data); })
       .catch(() => {});
@@ -56,7 +58,7 @@ export default function Home() {
     setFormStatus({ loading: true, success: false, error: "" });
 
     try {
-      const res = await fetch("/api/v1/contact", {
+      const res = await fetch(getApiUrl("/api/contact"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(contactForm),
