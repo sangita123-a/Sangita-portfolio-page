@@ -1,12 +1,83 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Navbar from "../components/Navbar";
 import PhotoFrame from "../components/PhotoFrame";
 import SocialIcons from "../components/SocialIcons";
 import TypingText from "../components/TypingText";
-import { FaLaptopCode, FaPython, FaEnvelope, FaPhoneAlt, FaMapMarkerAlt, FaGithub, FaInstagram, FaLinkedinIn } from "react-icons/fa";
+import { FaLaptopCode, FaPython, FaEnvelope, FaPhoneAlt, FaMapMarkerAlt, FaGithub, FaInstagram, FaLinkedinIn, FaSearch, FaCheckCircle, FaSpinner } from "react-icons/fa";
+import { initialProfile, initialProjects, initialSkills } from "@/lib/data/initialData";
+
 export default function Home() {
+  const [profile, setProfile] = useState(initialProfile);
+  const [projects, setProjects] = useState(initialProjects);
+  const [skills, setSkills] = useState(initialSkills);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Contact Form State
+  const [contactForm, setContactForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [formStatus, setFormStatus] = useState<{ loading: boolean; success: boolean; error: string }>({
+    loading: false,
+    success: false,
+    error: "",
+  });
+
+  useEffect(() => {
+    // Analytics Visit Logging
+    fetch("/api/v1/analytics", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "VISIT", metadata: { referrer: document.referrer || "direct" } }),
+    }).catch(() => {});
+
+    // Fetch Profile
+    fetch("/api/v1/profile")
+      .then((res) => res.json())
+      .then((data) => { if (data && !data.error) setProfile(data); })
+      .catch(() => {});
+
+    // Fetch Projects
+    fetch("/api/v1/projects")
+      .then((res) => res.json())
+      .then((data) => { if (Array.isArray(data) && data.length > 0) setProjects(data); })
+      .catch(() => {});
+
+    // Fetch Skills
+    fetch("/api/v1/skills")
+      .then((res) => res.json())
+      .then((data) => { if (Array.isArray(data) && data.length > 0) setSkills(data); })
+      .catch(() => {});
+  }, []);
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormStatus({ loading: true, success: false, error: "" });
+
+    try {
+      const res = await fetch("/api/v1/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(contactForm),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send message");
+
+      setFormStatus({ loading: false, success: true, error: "" });
+      setContactForm({ name: "", email: "", subject: "", message: "" });
+    } catch (err: any) {
+      setFormStatus({ loading: false, success: false, error: err.message || "Failed to send message. Please try again." });
+    }
+  };
+
+  const filteredProjects = projects.filter((p) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || p.badge.toLowerCase().includes(q);
+  });
+
   return (
     <main id="home" className="min-h-screen bg-black text-white">
       <Navbar />
@@ -25,15 +96,13 @@ export default function Home() {
               Hello, It&apos;s Me
             </p>
             <h1 className="text-5xl font-semibold leading-tight sm:text-6xl lg:text-7xl">
-              Sangita Sahoo
+              {profile.name}
             </h1>
             <p className="mt-4 text-2xl font-medium text-white/80 sm:text-3xl">
               And I&apos;m a <TypingText />
             </p>
             <p className="mt-6 max-w-xl text-lg leading-8 text-white/70">
-              Building secure, scalable and modern web applications.
-              <br />
-              Turning ideas into powerful digital solutions.
+              {profile.bio || "Building secure, scalable and modern web applications. Turning ideas into powerful digital solutions."}
             </p>
 
             <div className="mt-8 h-px w-32 bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-transparent" />
@@ -73,15 +142,9 @@ export default function Home() {
             </div>
 
             <div className="mt-10">
-              <p className="text-2xl font-bold text-white">Web Developer</p>
+              <p className="text-2xl font-bold text-white">{profile.title}</p>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300 sm:text-xl">
-                I am a dedicated <span className="text-cyan-400">Full Stack Developer</span> with a strong interest in building modern, responsive, and user-friendly web applications. I have hands-on experience working with <span className="text-cyan-400">Python</span>, <span className="text-cyan-400">Node.js</span>, <span className="text-cyan-400">JavaScript</span>, <span className="text-cyan-400">React</span>, <span className="text-cyan-400">HTML</span>, <span className="text-cyan-400">CSS</span>, <span className="text-cyan-400">MySQL</span>, and <span className="text-cyan-400">REST APIs</span> to develop scalable and efficient solutions.
-              </p>
-              <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300 sm:text-xl">
-                I enjoy transforming ideas into functional digital products by writing clean, maintainable, and efficient code. I continuously explore new technologies, improve my problem-solving skills, and follow industry best practices to create high-quality applications.
-              </p>
-              <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300 sm:text-xl">
-                My goal is to contribute to innovative software projects, collaborate with talented teams, and grow as a professional Full Stack Developer while delivering reliable and impactful web solutions.
+                {profile.about || "I am a dedicated Full Stack Developer with a strong interest in building modern, responsive, and user-friendly web applications."}
               </p>
             </div>
           </motion.div>
@@ -228,55 +291,27 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-bold text-white tracking-wide">Web Development</h3>
                 <p className="mt-2 text-xs lg:text-sm leading-relaxed text-[#94A3B8]">
-                  Proficient in building responsive and modern web applications using HTML, CSS, JavaScript, React, and PostgreSQL. Skilled in creating clean, user-friendly, scalable, and high-performance web interfaces with a strong focus on responsive design and best coding practices.
+                  Proficient in building responsive and modern web applications using HTML, CSS, JavaScript, React, and PostgreSQL.
                 </p>
 
-                {/* Progress Bars for Web Dev */}
+                {/* Dynamic Progress Bars */}
                 <div className="mt-6 space-y-3.5">
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[#E0E0E0] font-medium">React.js / Next.js</span>
-                      <span className="text-[#00CAFF] font-semibold">90%</span>
+                  {skills.slice(0, 4).map((s) => (
+                    <div key={s.id || s.name}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-[#E0E0E0] font-medium">{s.name}</span>
+                        <span className="text-[#00CAFF] font-semibold">{s.proficiency}%</span>
+                      </div>
+                      <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,202,255,0.4)]" style={{ width: `${s.proficiency}%` }} />
+                      </div>
                     </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,202,255,0.4)]" style={{ width: "90%" }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[#E0E0E0] font-medium">JavaScript / TypeScript</span>
-                      <span className="text-[#00CAFF] font-semibold">85%</span>
-                    </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,202,255,0.4)]" style={{ width: "85%" }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[#E0E0E0] font-medium">HTML5 / CSS3 / Tailwind</span>
-                      <span className="text-[#00CAFF] font-semibold">95%</span>
-                    </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,202,255,0.4)]" style={{ width: "95%" }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[#E0E0E0] font-medium">PostgreSQL / MySQL</span>
-                      <span className="text-[#00CAFF] font-semibold">80%</span>
-                    </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,202,255,0.4)]" style={{ width: "80%" }} />
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </motion.div>
 
-            {/* Right Card: Basics of Python */}
+            {/* Right Card: Python & Backend */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -290,50 +325,21 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-bold text-white tracking-wide">Basics of Python</h3>
                 <p className="mt-2 text-xs lg:text-sm leading-relaxed text-[#94A3B8]">
-                  Strong foundation in Python programming, including variables, data types, operators, loops, functions, modules, file handling, and object-oriented programming. Able to write clean Python scripts for automation, problem-solving, and backend development while continuously exploring AI and modern Python frameworks.
+                  Strong foundation in Python programming, including variables, data types, operators, loops, functions, and backend scripting.
                 </p>
 
-                {/* Progress Bars for Python */}
                 <div className="mt-6 space-y-3.5">
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[#E0E0E0] font-medium">Python Fundamentals</span>
-                      <span className="text-[#00CAFF] font-semibold">85%</span>
+                  {(skills.length > 4 ? skills.slice(4, 8) : skills.slice(0, 4)).map((s) => (
+                    <div key={s.id || s.name}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-[#E0E0E0] font-medium">{s.name}</span>
+                        <span className="text-[#00CAFF] font-semibold">{s.proficiency}%</span>
+                      </div>
+                      <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,202,255,0.4)]" style={{ width: `${s.proficiency}%` }} />
+                      </div>
                     </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,202,255,0.4)]" style={{ width: "85%" }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[#E0E0E0] font-medium">OOP &amp; Functions</span>
-                      <span className="text-[#00CAFF] font-semibold">75%</span>
-                    </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,202,255,0.4)]" style={{ width: "75%" }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[#E0E0E0] font-medium">File Handling &amp; Automation Scripts</span>
-                      <span className="text-[#00CAFF] font-semibold">80%</span>
-                    </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,202,255,0.4)]" style={{ width: "80%" }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[#E0E0E0] font-medium">API Integration</span>
-                      <span className="text-[#00CAFF] font-semibold">70%</span>
-                    </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,202,255,0.4)]" style={{ width: "70%" }} />
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -349,9 +355,9 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="mx-auto mb-16 max-w-4xl"
+            className="mx-auto mb-10 max-w-4xl text-center"
           >
-            <div className="text-center">
+            <div>
               <h2 className="text-5xl font-bold tracking-tight text-white sm:text-6xl">
                 My <span className="text-[#00CAFF] drop-shadow-[0_0_15px_rgba(0,202,255,0.3)]">Projects</span>
               </h2>
@@ -359,75 +365,72 @@ export default function Home() {
             </div>
           </motion.div>
 
+          {/* Search Input for Projects */}
+          <div className="mb-10 max-w-md mx-auto relative">
+            <input
+              type="text"
+              placeholder="Search projects by tech or title..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-full bg-[#0B111E] border border-[#00CAFF]/20 pl-11 pr-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-[#00CAFF] focus:shadow-[0_0_15px_rgba(0,202,255,0.2)]"
+            />
+            <FaSearch className="absolute left-4 top-3 text-cyan-400 text-xs" />
+          </div>
+
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {/* Project 1 */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.6, delay: 0 }}
-              className="group overflow-hidden rounded-[28px] border border-[#00CAFF]/10 bg-[#0B111E] transition-all duration-300 ease-out hover:-translate-y-2 hover:border-[#00CAFF]/40 hover:shadow-[0_0_30px_rgba(0,202,255,0.15)]"
-            >
-              <div className="relative h-48 bg-gradient-to-br from-[#00CAFF]/20 to-black p-6 flex flex-col justify-between">
-                <span className="text-xs font-semibold tracking-widest text-[#00CAFF] uppercase bg-black/40 px-3 py-1 rounded-full self-start">React / Next.js</span>
-                <h4 className="text-2xl font-bold text-white group-hover:text-[#00CAFF] transition-colors duration-300">Portfolio Website</h4>
-              </div>
-              <div className="p-6">
-                <p className="text-sm leading-6 text-[#94A3B8]">
-                  A modern, dark-neon themed developer portfolio constructed with Next.js, Framer Motion, and Tailwind CSS.
-                </p>
-                <div className="mt-6 flex gap-4">
-                  <a href="#" className="text-xs font-semibold text-white bg-[#00CAFF]/10 border border-[#00CAFF]/20 py-2 px-4 rounded-lg hover:bg-[#00CAFF]/20 transition-all duration-300">Live Demo</a>
-                  <a href="#" className="text-xs font-semibold text-[#94A3B8] py-2 px-4 rounded-lg hover:text-white transition-all duration-300">GitHub</a>
+            {filteredProjects.map((p, idx) => (
+              <motion.div
+                key={p.id || p.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.6, delay: idx * 0.1 }}
+                className="group overflow-hidden rounded-[28px] border border-[#00CAFF]/10 bg-[#0B111E] transition-all duration-300 ease-out hover:-translate-y-2 hover:border-[#00CAFF]/40 hover:shadow-[0_0_30px_rgba(0,202,255,0.15)] flex flex-col justify-between"
+              >
+                <div>
+                  <div className="relative h-48 bg-gradient-to-br from-[#00CAFF]/20 to-black p-6 flex flex-col justify-between overflow-hidden">
+                    {p.thumbnailUrl && (
+                      <Image
+                        src={p.thumbnailUrl}
+                        alt={p.title}
+                        fill
+                        className="object-cover object-top opacity-40 group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B111E] via-[#0B111E]/40 to-transparent" />
+                    <span className="relative z-10 text-xs font-semibold tracking-widest text-[#00CAFF] uppercase bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full self-start border border-[#00CAFF]/20">
+                      {p.badge}
+                    </span>
+                    <h4 className="relative z-10 text-2xl font-bold text-white group-hover:text-[#00CAFF] transition-colors duration-300">
+                      {p.title}
+                    </h4>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-sm leading-6 text-[#94A3B8]">{p.description}</p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-
-            {/* Project 2 */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="group overflow-hidden rounded-[28px] border border-[#00CAFF]/10 bg-[#0B111E] transition-all duration-300 ease-out hover:-translate-y-2 hover:border-[#00CAFF]/40 hover:shadow-[0_0_30px_rgba(0,202,255,0.15)]"
-            >
-              <div className="relative h-48 bg-gradient-to-br from-[#00CAFF]/20 to-black p-6 flex flex-col justify-between">
-                <span className="text-xs font-semibold tracking-widest text-[#00CAFF] uppercase bg-black/40 px-3 py-1 rounded-full self-start">Python / AI</span>
-                <h4 className="text-2xl font-bold text-white group-hover:text-[#00CAFF] transition-colors duration-300">AI Task Automator</h4>
-              </div>
-              <div className="p-6">
-                <p className="text-sm leading-6 text-[#94A3B8]">
-                  An intelligent automation tool built in Python that leverages LLM agents to schedule and manage software engineering workflows.
-                </p>
-                <div className="mt-6 flex gap-4">
-                  <a href="#" className="text-xs font-semibold text-white bg-[#00CAFF]/10 border border-[#00CAFF]/20 py-2 px-4 rounded-lg hover:bg-[#00CAFF]/20 transition-all duration-300">Live Demo</a>
-                  <a href="#" className="text-xs font-semibold text-[#94A3B8] py-2 px-4 rounded-lg hover:text-white transition-all duration-300">GitHub</a>
+                <div className="p-6 pt-0">
+                  <div className="flex gap-4">
+                    <a
+                      href={p.demoUrl || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-semibold text-white bg-[#00CAFF]/10 border border-[#00CAFF]/20 py-2 px-4 rounded-lg hover:bg-[#00CAFF]/20 transition-all duration-300"
+                    >
+                      Live Demo
+                    </a>
+                    <a
+                      href={p.githubUrl || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-semibold text-[#94A3B8] py-2 px-4 rounded-lg hover:text-white transition-all duration-300"
+                    >
+                      GitHub
+                    </a>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-
-            {/* Project 3 */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="group overflow-hidden rounded-[28px] border border-[#00CAFF]/10 bg-[#0B111E] transition-all duration-300 ease-out hover:-translate-y-2 hover:border-[#00CAFF]/40 hover:shadow-[0_0_30px_rgba(0,202,255,0.15)]"
-            >
-              <div className="relative h-48 bg-gradient-to-br from-[#00CAFF]/20 to-black p-6 flex flex-col justify-between">
-                <span className="text-xs font-semibold tracking-widest text-[#00CAFF] uppercase bg-black/40 px-3 py-1 rounded-full self-start">Node.js / Express</span>
-                <h4 className="text-2xl font-bold text-white group-hover:text-[#00CAFF] transition-colors duration-300">E-Commerce REST API</h4>
-              </div>
-              <div className="p-6">
-                <p className="text-sm leading-6 text-[#94A3B8]">
-                  A robust, secure, and scalable backend API service for managing digital inventories, payments, and order tracking.
-                </p>
-                <div className="mt-6 flex gap-4">
-                  <a href="#" className="text-xs font-semibold text-white bg-[#00CAFF]/10 border border-[#00CAFF]/20 py-2 px-4 rounded-lg hover:bg-[#00CAFF]/20 transition-all duration-300">Live Demo</a>
-                  <a href="#" className="text-xs font-semibold text-[#94A3B8] py-2 px-4 rounded-lg hover:text-white transition-all duration-300">GitHub</a>
-                </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -460,9 +463,8 @@ export default function Home() {
               </p>
 
               <div className="space-y-4">
-                {/* Email */}
                 <a
-                  href="mailto:ssangitasahoo48@gmail.com"
+                  href={`mailto:${profile.email}`}
                   className="flex items-center gap-3 p-2.5 rounded-xl bg-black/30 border border-[#00CAFF]/5 hover:border-[#00CAFF]/30 hover:bg-black/50 hover:shadow-[0_0_15px_rgba(0,202,255,0.1)] hover:scale-[1.01] transition-all duration-300 group"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-lg text-[#00CAFF] border border-[#00CAFF]/10 transition-all duration-300 group-hover:scale-105 group-hover:border-[#00CAFF]/40">
@@ -470,13 +472,12 @@ export default function Home() {
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-widest text-[#94A3B8]">Email Me</p>
-                    <span className="text-white text-xs sm:text-sm font-semibold break-all">ssangitasahoo48@gmail.com</span>
+                    <span className="text-white text-xs sm:text-sm font-semibold break-all">{profile.email}</span>
                   </div>
                 </a>
 
-                {/* Phone */}
                 <a
-                  href="tel:+916371115043"
+                  href={`tel:${profile.phone}`}
                   className="flex items-center gap-3 p-2.5 rounded-xl bg-black/30 border border-[#00CAFF]/5 hover:border-[#00CAFF]/30 hover:bg-black/50 hover:shadow-[0_0_15px_rgba(0,202,255,0.1)] hover:scale-[1.01] transition-all duration-300 group"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-lg text-[#00CAFF] border border-[#00CAFF]/10 transition-all duration-300 group-hover:scale-105 group-hover:border-[#00CAFF]/40">
@@ -484,29 +485,25 @@ export default function Home() {
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-widest text-[#94A3B8]">Call Me</p>
-                    <span className="text-white text-xs sm:text-sm font-semibold">+91 63711 15043</span>
+                    <span className="text-white text-xs sm:text-sm font-semibold">{profile.phone}</span>
                   </div>
                 </a>
 
-                {/* Location */}
-                <div
-                  className="flex items-center gap-3 p-2.5 rounded-xl bg-black/30 border border-[#00CAFF]/5 hover:border-[#00CAFF]/30 hover:bg-black/50 hover:shadow-[0_0_15px_rgba(0,202,255,0.1)] hover:scale-[1.01] transition-all duration-300 group"
-                >
+                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-black/30 border border-[#00CAFF]/5 hover:border-[#00CAFF]/30 hover:bg-black/50 hover:shadow-[0_0_15px_rgba(0,202,255,0.1)] hover:scale-[1.01] transition-all duration-300 group">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-lg text-[#00CAFF] border border-[#00CAFF]/10 transition-all duration-300 group-hover:scale-105 group-hover:border-[#00CAFF]/40">
                     <FaMapMarkerAlt size={16} />
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-widest text-[#94A3B8]">Location</p>
-                    <span className="text-white text-xs sm:text-sm font-semibold">Hyderabad, Telangana</span>
+                    <span className="text-white text-xs sm:text-sm font-semibold">{profile.location}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Social Icons */}
               <div className="pt-2">
                 <div className="flex items-center gap-3">
                   <a
-                    href="https://github.com"
+                    href={profile.githubUrl || "https://github.com/sangita123-a"}
                     target="_blank"
                     rel="noreferrer"
                     className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 border border-[#00CAFF]/20 text-[#00CAFF] shadow-[0_0_10px_rgba(0,202,255,0.1)] transition-all duration-300 hover:scale-110 hover:border-[#00CAFF]/70 hover:shadow-[0_0_20px_rgba(0,202,255,0.45)] hover:text-white"
@@ -514,7 +511,7 @@ export default function Home() {
                     <FaGithub size={16} />
                   </a>
                   <a
-                    href="https://instagram.com"
+                    href={profile.instagramUrl || "https://instagram.com"}
                     target="_blank"
                     rel="noreferrer"
                     className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 border border-[#00CAFF]/20 text-[#00CAFF] shadow-[0_0_10px_rgba(0,202,255,0.1)] transition-all duration-300 hover:scale-110 hover:border-[#00CAFF]/70 hover:shadow-[0_0_20px_rgba(0,202,255,0.45)] hover:text-white"
@@ -522,7 +519,7 @@ export default function Home() {
                     <FaInstagram size={16} />
                   </a>
                   <a
-                    href="https://linkedin.com"
+                    href={profile.linkedinUrl || "https://linkedin.com"}
                     target="_blank"
                     rel="noreferrer"
                     className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 border border-[#00CAFF]/20 text-[#00CAFF] shadow-[0_0_10px_rgba(0,202,255,0.1)] transition-all duration-300 hover:scale-110 hover:border-[#00CAFF]/70 hover:shadow-[0_0_20px_rgba(0,202,255,0.45)] hover:text-white"
@@ -533,7 +530,7 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Right side: Contact Form */}
+            {/* Right side: Functional Contact Form */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -541,59 +538,96 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="rounded-[24px] border border-[#00CAFF]/10 bg-[#0B111E]/80 backdrop-blur-md p-6 sm:p-8 shadow-[0_0_40px_rgba(0,0,0,0.45)] hover:border-[#00CAFF]/20 transition-all duration-300"
             >
-              <form className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
+              {formStatus.success ? (
+                <div className="text-center py-10 space-y-4">
+                  <FaCheckCircle className="mx-auto text-emerald-400 text-5xl animate-bounce" />
+                  <h3 className="text-xl font-bold text-white">Message Sent Successfully!</h3>
+                  <p className="text-xs text-[#94A3B8] max-w-xs mx-auto">
+                    Thank you for reaching out. Your message has been stored and emailed directly to Sangita.
+                  </p>
+                  <button
+                    onClick={() => setFormStatus({ loading: false, success: false, error: "" })}
+                    className="mt-4 px-6 py-2 rounded-xl bg-[#00CAFF]/10 border border-[#00CAFF]/30 text-xs font-semibold text-[#00CAFF] hover:bg-[#00CAFF]/20"
+                  >
+                    Send Another Message
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleContactSubmit} className="space-y-4">
+                  {formStatus.error && (
+                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-medium">
+                      {formStatus.error}
+                    </div>
+                  )}
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <label htmlFor="name" className="text-xs font-medium text-[#E0E0E0]">Name</label>
+                      <input
+                        type="text"
+                        id="name"
+                        required
+                        value={contactForm.name}
+                        onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                        placeholder="Your Name"
+                        className="w-full rounded-lg bg-[#1F2937] border border-[#00CAFF]/10 px-3 py-2 text-sm text-white placeholder-slate-500 shadow-inner outline-none transition-all duration-300 focus:border-[#00CAFF] focus:ring-1 focus:ring-[#00CAFF]/40 focus:shadow-[0_0_10px_rgba(0,202,255,0.15)]"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label htmlFor="email" className="text-xs font-medium text-[#E0E0E0]">Email</label>
+                      <input
+                        type="email"
+                        id="email"
+                        required
+                        value={contactForm.email}
+                        onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                        placeholder="Your Email"
+                        className="w-full rounded-lg bg-[#1F2937] border border-[#00CAFF]/10 px-3 py-2 text-sm text-white placeholder-slate-500 shadow-inner outline-none transition-all duration-300 focus:border-[#00CAFF] focus:ring-1 focus:ring-[#00CAFF]/40 focus:shadow-[0_0_10px_rgba(0,202,255,0.15)]"
+                      />
+                    </div>
+                  </div>
+                  
                   <div className="space-y-1.5">
-                    <label htmlFor="name" className="text-xs font-medium text-[#E0E0E0]">Name</label>
+                    <label htmlFor="subject" className="text-xs font-medium text-[#E0E0E0]">Subject</label>
                     <input
                       type="text"
-                      id="name"
-                      placeholder="Your Name"
-                      className="w-full rounded-lg bg-[#1F2937] border border-[#00CAFF]/10 px-3 py-2 text-sm text-white placeholder-slate-500 shadow-inner outline-none transition-all duration-300 focus:border-[#00CAFF] focus:ring-1 focus:ring-[#00CAFF]/40 focus:shadow-[0_0_10px_rgba(0,202,255,0.15)]"
+                      id="subject"
                       required
+                      value={contactForm.subject}
+                      onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
+                      placeholder="Subject of Message"
+                      className="w-full rounded-lg bg-[#1F2937] border border-[#00CAFF]/10 px-3 py-2 text-sm text-white placeholder-slate-500 shadow-inner outline-none transition-all duration-300 focus:border-[#00CAFF] focus:ring-1 focus:ring-[#00CAFF]/40 focus:shadow-[0_0_10px_rgba(0,202,255,0.15)]"
                     />
                   </div>
+
                   <div className="space-y-1.5">
-                    <label htmlFor="email" className="text-xs font-medium text-[#E0E0E0]">Email</label>
-                    <input
-                      type="email"
-                      id="email"
-                      placeholder="Your Email"
-                      className="w-full rounded-lg bg-[#1F2937] border border-[#00CAFF]/10 px-3 py-2 text-sm text-white placeholder-slate-500 shadow-inner outline-none transition-all duration-300 focus:border-[#00CAFF] focus:ring-1 focus:ring-[#00CAFF]/40 focus:shadow-[0_0_10px_rgba(0,202,255,0.15)]"
+                    <label htmlFor="message" className="text-xs font-medium text-[#E0E0E0]">Message</label>
+                    <textarea
+                      id="message"
+                      rows={4}
                       required
-                    />
+                      value={contactForm.message}
+                      onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                      placeholder="Your Message..."
+                      className="w-full rounded-lg bg-[#1F2937] border border-[#00CAFF]/10 px-3 py-2 text-sm text-white placeholder-slate-500 shadow-inner outline-none transition-all duration-300 focus:border-[#00CAFF] focus:ring-1 focus:ring-[#00CAFF]/40 focus:shadow-[0_0_10px_rgba(0,202,255,0.15)] resize-none"
+                    ></textarea>
                   </div>
-                </div>
-                
-                <div className="space-y-1.5">
-                  <label htmlFor="subject" className="text-xs font-medium text-[#E0E0E0]">Subject</label>
-                  <input
-                    type="text"
-                    id="subject"
-                    placeholder="Subject of Message"
-                    className="w-full rounded-lg bg-[#1F2937] border border-[#00CAFF]/10 px-3 py-2 text-sm text-white placeholder-slate-500 shadow-inner outline-none transition-all duration-300 focus:border-[#00CAFF] focus:ring-1 focus:ring-[#00CAFF]/40 focus:shadow-[0_0_10px_rgba(0,202,255,0.15)]"
-                    required
-                  />
-                </div>
 
-                <div className="space-y-1.5">
-                  <label htmlFor="message" className="text-xs font-medium text-[#E0E0E0]">Message</label>
-                  <textarea
-                    id="message"
-                    rows={4}
-                    placeholder="Your Message..."
-                    className="w-full rounded-lg bg-[#1F2937] border border-[#00CAFF]/10 px-3 py-2 text-sm text-white placeholder-slate-500 shadow-inner outline-none transition-all duration-300 focus:border-[#00CAFF] focus:ring-1 focus:ring-[#00CAFF]/40 focus:shadow-[0_0_10px_rgba(0,202,255,0.15)] resize-none"
-                    required
-                  ></textarea>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-[#00CAFF] to-[#00E5FF] py-3 text-sm font-bold text-black shadow-[0_0_15px_rgba(0,202,255,0.2)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,202,255,0.5)] hover:scale-[1.01] hover:brightness-110"
-                >
-                  Submit
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={formStatus.loading}
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#00CAFF] to-[#00E5FF] py-3 text-sm font-bold text-black shadow-[0_0_15px_rgba(0,202,255,0.2)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(0,202,255,0.5)] hover:scale-[1.01] hover:brightness-110 disabled:opacity-50"
+                  >
+                    {formStatus.loading ? (
+                      <>
+                        <FaSpinner className="animate-spin" /> Sending...
+                      </>
+                    ) : (
+                      "Submit Message"
+                    )}
+                  </button>
+                </form>
+              )}
             </motion.div>
           </div>
         </div>

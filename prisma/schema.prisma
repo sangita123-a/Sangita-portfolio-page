@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Profile {
+  id           String   @id @default(uuid())
+  name         String
+  title        String
+  bio          String
+  about        String   @db.Text
+  location     String
+  email        String
+  phone        String
+  avatarUrl    String?
+  githubUrl    String?
+  linkedinUrl  String?
+  instagramUrl String?
+  twitterUrl   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Project {
+  id           String   @id @default(uuid())
+  title        String
+  slug         String   @unique
+  badge        String
+  description  String   @db.Text
+  techStack    String[]
+  thumbnailUrl String?
+  screenshots  String[]
+  demoUrl      String?
+  githubUrl    String?
+  featured     Boolean  @default(false)
+  hidden       Boolean  @default(false)
+  viewsCount   Int      @default(0)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Skill {
+  id          String   @id @default(uuid())
+  name        String
+  category    String   // Frontend, Backend, Database, Tools, Languages
+  proficiency Int      @default(80)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Experience {
+  id          String   @id @default(uuid())
+  company     String
+  role        String
+  duration    String
+  description String   @db.Text
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Education {
+  id         String   @id @default(uuid())
+  university String
+  degree     String
+  cgpa       String
+  duration   String
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Certificate {
+  id          String   @id @default(uuid())
+  title       String
+  issuer      String
+  issueDate   String
+  fileUrl     String
+  downloadUrl String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Resume {
+  id          String   @id @default(uuid())
+  versionName String
+  fileUrl     String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  replied   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NewsletterSubscriber {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  subscribedAt DateTime @default(now())
+}
+
+model BlogPost {
+  id             String   @id @default(uuid())
+  title          String
+  slug           String   @unique
+  excerpt        String   @db.Text
+  content        String   @db.Text
+  coverImage     String?
+  category       String
+  tags           String[]
+  status         String   @default("DRAFT") // DRAFT, PUBLISHED
+  seoTitle       String?
+  seoDescription String?
+  viewsCount     Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model AnalyticsLog {
+  id        String   @id @default(uuid())
+  type      String   // VISIT, PROJECT_VIEW, RESUME_DOWNLOAD, CONTACT_SUBMIT
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
