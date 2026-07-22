@@ -419,86 +419,85 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Projects Section */}
-      <section id="projects" className="bg-black py-[80px] lg:py-[100px] transition-colors duration-300">
-        <div className="mx-auto max-w-[1020px] px-6 sm:px-8 lg:px-12">
+      {/* Redesigned Minimal Compact Projects Section */}
+      <section id="projects" className="bg-black py-[70px] lg:py-[90px] transition-colors duration-300">
+        <div className="mx-auto max-w-[960px] px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 35 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="mx-auto mb-8 max-w-3xl text-center"
+            className="mx-auto mb-7 max-w-2xl text-center"
           >
             <div>
-              <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
                 My <span className="text-[#00CAFF] drop-shadow-[0_0_15px_rgba(0,202,255,0.3)]">Projects</span>
               </h2>
-              <div className="mx-auto mt-2.5 h-1 w-20 rounded-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] shadow-[0_0_10px_rgba(0,202,255,0.5)]" />
+              <div className="mx-auto mt-2 h-1 w-16 rounded-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] shadow-[0_0_10px_rgba(0,202,255,0.5)]" />
             </div>
           </motion.div>
 
-          <div className="mb-8 max-w-sm mx-auto relative">
+          <div className="mb-7 max-w-xs mx-auto relative">
             <input
               type="text"
-              placeholder="Search projects by tech or title..."
+              placeholder="Search projects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-full bg-[#0B111E] border border-[#00CAFF]/20 pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-[#00CAFF] focus:shadow-[0_0_15px_rgba(0,202,255,0.2)]"
+              className="w-full rounded-full bg-[#0B111E] border border-[#00CAFF]/20 pl-9 pr-3.5 py-1.5 text-xs text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-[#00CAFF] focus:shadow-[0_0_12px_rgba(0,202,255,0.2)]"
             />
-            <FaSearch className="absolute left-3.5 top-2.5 text-cyan-400 text-xs" />
+            <FaSearch className="absolute left-3 top-2.5 text-cyan-400 text-[11px]" />
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3 justify-center">
             {filteredProjects.map((p, idx) => (
               <motion.div
                 key={p.id || p.title}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.6, delay: idx * 0.1 }}
-                className="group overflow-hidden rounded-[22px] border border-[#00CAFF]/10 bg-[#0B111E] transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-[#00CAFF]/40 hover:shadow-[0_0_25px_rgba(0,202,255,0.15)] flex flex-col justify-between"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.5, delay: idx * 0.08 }}
+                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[#00CAFF]/15 bg-[#0B111E] transition-all duration-300 hover:-translate-y-1 hover:border-[#00CAFF]/40 hover:shadow-[0_0_20px_rgba(0,202,255,0.15)]"
               >
                 <div>
-                  <div className="relative h-36 sm:h-40 bg-gradient-to-br from-[#00CAFF]/20 to-black p-4 sm:p-5 flex flex-col justify-between overflow-hidden">
-                    {p.thumbnailUrl && (
+                  {/* Compact Image */}
+                  <div className="relative h-28 sm:h-32 w-full overflow-hidden bg-black/60">
+                    {p.thumbnailUrl ? (
                       <img
                         src={p.thumbnailUrl}
                         alt={p.title}
-                        className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-500"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-br from-[#00CAFF]/20 via-[#0B111E] to-black" />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B111E] via-[#0B111E]/40 to-transparent" />
-                    <span className="relative z-10 text-[10px] font-semibold tracking-wider text-[#00CAFF] uppercase bg-black/60 backdrop-blur-sm px-2.5 py-0.5 rounded-full self-start border border-[#00CAFF]/20">
-                      {p.badge}
-                    </span>
-                    <h4 className="relative z-10 text-lg sm:text-xl font-bold text-white group-hover:text-[#00CAFF] transition-colors duration-300 leading-snug">
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B111E] via-transparent to-transparent" />
+                    {p.badge && (
+                      <span className="absolute top-2.5 left-2.5 z-10 text-[9px] font-bold tracking-wider text-[#00CAFF] uppercase bg-black/75 backdrop-blur-md px-2 py-0.5 rounded-full border border-[#00CAFF]/30">
+                        {p.badge}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Compact Title & 2-Line Description */}
+                  <div className="p-3.5 space-y-1">
+                    <h4 className="text-sm font-bold text-white transition-colors duration-300 group-hover:text-[#00CAFF] truncate">
                       {p.title}
                     </h4>
-                  </div>
-                  <div className="p-4 sm:p-5">
-                    <p className="text-xs sm:text-sm leading-relaxed text-[#94A3B8]">{p.description}</p>
-                    {Array.isArray(p.techStack) && p.techStack.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-3">
-                        {p.techStack.map((tech: string) => (
-                          <span
-                            key={tech}
-                            className="text-[10px] font-mono text-cyan-300 bg-[#00CAFF]/10 px-2 py-0.5 rounded border border-[#00CAFF]/20"
-                          >
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                    <p className="text-xs leading-relaxed text-[#94A3B8] line-clamp-2">
+                      {p.description}
+                    </p>
                   </div>
                 </div>
-                <div className="p-4 sm:p-5 pt-0">
-                  <div className="flex gap-3">
+
+                {/* Compact Rounded Buttons (Single Row) */}
+                <div className="px-3.5 pb-3.5 pt-1">
+                  <div className="flex items-center gap-2">
                     {p.demoUrl && (
                       <a
                         href={p.demoUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-semibold text-white bg-[#00CAFF]/10 border border-[#00CAFF]/20 py-1.5 px-3.5 rounded-lg hover:bg-[#00CAFF]/20 transition-all duration-300"
+                        className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] px-3 py-1 text-[11px] font-bold text-black shadow-[0_0_10px_rgba(0,202,255,0.2)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(0,202,255,0.4)]"
                       >
                         Live Demo
                       </a>
@@ -508,7 +507,7 @@ export default function Home() {
                         href={p.githubUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-semibold text-[#94A3B8] py-1.5 px-3.5 rounded-lg hover:text-white transition-all duration-300"
+                        className="inline-flex items-center justify-center rounded-full border border-[#00CAFF]/30 bg-[#00CAFF]/10 px-3 py-1 text-[11px] font-semibold text-[#00CAFF] transition-all duration-300 hover:bg-[#00CAFF]/20 hover:border-[#00CAFF]/60 hover:text-white"
                       >
                         GitHub
                       </a>
@@ -661,7 +660,7 @@ export default function Home() {
               className="space-y-6 lg:space-y-8"
             >
               <div>
-                <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+                <h2 className="text-4xl font-extrabold tracking-tight text-[#ffffff] sm:text-5xl">
                   Contact <span className="text-[#00CAFF] drop-shadow-[0_0_15px_rgba(0,202,255,0.35)]">Me</span>
                 </h2>
                 <h3 className="text-xl font-bold text-[#00CAFF] tracking-wide mt-2 drop-shadow-[0_0_10px_rgba(0,202,255,0.2)]">
