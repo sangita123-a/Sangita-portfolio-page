@@ -31,20 +31,20 @@ export default function AdminDashboard() {
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <div className="bg-[#0B111E] border border-[#00CAFF]/15 rounded-2xl p-5 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
           <div className="flex items-center justify-between text-[#00CAFF]">
-            <span className="text-xs uppercase tracking-widest font-semibold text-[#94A3B8]">Total Visitors</span>
-            <FaEye size={18} />
+            <span className="text-xs uppercase tracking-widest font-semibold text-[#94A3B8]">Total Projects</span>
+            <FaFolderOpen size={18} />
           </div>
-          <p className="text-3xl font-bold text-white mt-3">{stats.visitors}</p>
-          <p className="text-[11px] text-emerald-400 mt-1">↑ Active traffic</p>
+          <p className="text-3xl font-bold text-white mt-3">3</p>
+          <p className="text-[11px] text-emerald-400 mt-1">Includes Foodiq</p>
         </div>
 
         <div className="bg-[#0B111E] border border-[#00CAFF]/15 rounded-2xl p-5 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
           <div className="flex items-center justify-between text-[#00CAFF]">
-            <span className="text-xs uppercase tracking-widest font-semibold text-[#94A3B8]">Project Views</span>
-            <FaFolderOpen size={18} />
+            <span className="text-xs uppercase tracking-widest font-semibold text-[#94A3B8]">Total Visitors</span>
+            <FaEye size={18} />
           </div>
-          <p className="text-3xl font-bold text-white mt-3">{stats.projectViews}</p>
-          <p className="text-[11px] text-emerald-400 mt-1">Foodiq & Portfolio</p>
+          <p className="text-3xl font-bold text-white mt-3">{stats.visitors}</p>
+          <p className="text-[11px] text-emerald-400 mt-1">Active traffic</p>
         </div>
 
         <div className="bg-[#0B111E] border border-[#00CAFF]/15 rounded-2xl p-5 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
