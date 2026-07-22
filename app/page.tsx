@@ -396,6 +396,7 @@ export default function Home() {
                         src={p.thumbnailUrl}
                         alt={p.title}
                         fill
+                        unoptimized
                         className="object-cover object-top opacity-40 group-hover:scale-105 transition-transform duration-500"
                       />
                     )}
@@ -409,6 +410,18 @@ export default function Home() {
                   </div>
                   <div className="p-6">
                     <p className="text-sm leading-6 text-[#94A3B8]">{p.description}</p>
+                    {p.techStack && p.techStack.length > 0 && (
+                      <div className="mt-4 flex flex-wrap gap-1.5">
+                        {p.techStack.map((tech: string) => (
+                          <span
+                            key={tech}
+                            className="text-[10px] font-semibold text-[#00CAFF] bg-[#00CAFF]/10 border border-[#00CAFF]/20 px-2.5 py-0.5 rounded-full"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="p-6 pt-0">
