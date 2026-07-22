@@ -27,7 +27,7 @@ export default function AdminProjects() {
     badge: "Full Stack Web Application",
     description: "",
     techStack: "",
-    thumbnailUrl: "/foodiq-preview.png",
+    thumbnailUrl: "/images/projects/foodiq-preview.png",
     demoUrl: "",
     githubUrl: "",
     featured: true,
