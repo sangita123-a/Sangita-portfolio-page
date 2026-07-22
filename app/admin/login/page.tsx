@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaLock, FaEnvelope, FaShieldAlt } from "react-icons/fa";
+import { getApiUrl } from "@/lib/apiConfig";
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function AdminLogin() {
     setError("");
 
     try {
-      const res = await fetch("/api/v1/auth/login", {
+      const res = await fetch(getApiUrl("/api/v1/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
