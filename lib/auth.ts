@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { NextRequest } from "next/server";
+import { env } from "./env";
 
-const JWT_SECRET = process.env.JWT_SECRET || "super-secret-jwt-key-sangita-portfolio-2026";
+const getJwtSecret = () => env.JWT_SECRET || process.env.JWT_SECRET || "production-jwt-secret-key-sangita-portfolio-2026";
 
 export interface JwtPayload {
   email: string;
@@ -11,12 +12,12 @@ export interface JwtPayload {
 }
 
 export function generateToken(payload: JwtPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: "7d" });
 }
 
 export function verifyToken(token: string): JwtPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as JwtPayload;
+    return jwt.verify(token, getJwtSecret()) as JwtPayload;
   } catch (error) {
     return null;
   }
