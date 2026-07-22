@@ -23,7 +23,7 @@ export default function AdminProjects() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({
     title: "",
-    badge: "NEXT.JS / NODE.JS / POSTGRESQL",
+    badge: "Full Stack Web Application",
     description: "",
     techStack: "",
     thumbnailUrl: "/foodiq-preview.png",
