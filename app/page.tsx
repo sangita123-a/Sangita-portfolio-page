@@ -350,36 +350,36 @@ export default function Home() {
       </section>
 
       {/* Projects Section */}
-      <section id="projects" className="bg-black py-[100px] transition-colors duration-300">
-        <div className="mx-auto max-w-[1200px] px-6 sm:px-8 lg:px-12">
+      <section id="projects" className="bg-black py-[80px] lg:py-[100px] transition-colors duration-300">
+        <div className="mx-auto max-w-[1020px] px-6 sm:px-8 lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 35 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="mx-auto mb-10 max-w-4xl text-center"
+            className="mx-auto mb-8 max-w-3xl text-center"
           >
             <div>
-              <h2 className="text-5xl font-bold tracking-tight text-white sm:text-6xl">
+              <h2 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
                 My <span className="text-[#00CAFF] drop-shadow-[0_0_15px_rgba(0,202,255,0.3)]">Projects</span>
               </h2>
-              <div className="mx-auto mt-3 h-1 w-24 rounded-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] shadow-[0_0_10px_rgba(0,202,255,0.5)]" />
+              <div className="mx-auto mt-2.5 h-1 w-20 rounded-full bg-gradient-to-r from-[#00CAFF] to-[#00B4D8] shadow-[0_0_10px_rgba(0,202,255,0.5)]" />
             </div>
           </motion.div>
 
           {/* Search Input for Projects */}
-          <div className="mb-10 max-w-md mx-auto relative">
+          <div className="mb-8 max-w-sm mx-auto relative">
             <input
               type="text"
               placeholder="Search projects by tech or title..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-full bg-[#0B111E] border border-[#00CAFF]/20 pl-11 pr-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-[#00CAFF] focus:shadow-[0_0_15px_rgba(0,202,255,0.2)]"
+              className="w-full rounded-full bg-[#0B111E] border border-[#00CAFF]/20 pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-[#00CAFF] focus:shadow-[0_0_15px_rgba(0,202,255,0.2)]"
             />
-            <FaSearch className="absolute left-4 top-3 text-cyan-400 text-xs" />
+            <FaSearch className="absolute left-3.5 top-2.5 text-cyan-400 text-xs" />
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredProjects.map((p, idx) => (
               <motion.div
                 key={p.id || p.title}
@@ -387,10 +387,10 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.6, delay: idx * 0.1 }}
-                className="group overflow-hidden rounded-[28px] border border-[#00CAFF]/10 bg-[#0B111E] transition-all duration-300 ease-out hover:-translate-y-2 hover:border-[#00CAFF]/40 hover:shadow-[0_0_30px_rgba(0,202,255,0.15)] flex flex-col justify-between"
+                className="group overflow-hidden rounded-[22px] border border-[#00CAFF]/10 bg-[#0B111E] transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-[#00CAFF]/40 hover:shadow-[0_0_25px_rgba(0,202,255,0.15)] flex flex-col justify-between"
               >
                 <div>
-                  <div className="relative h-48 bg-gradient-to-br from-[#00CAFF]/20 to-black p-6 flex flex-col justify-between overflow-hidden">
+                  <div className="relative h-36 sm:h-40 bg-gradient-to-br from-[#00CAFF]/20 to-black p-4 sm:p-5 flex flex-col justify-between overflow-hidden">
                     {p.thumbnailUrl && (
                       <Image
                         src={p.thumbnailUrl}
@@ -401,36 +401,24 @@ export default function Home() {
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0B111E] via-[#0B111E]/40 to-transparent" />
-                    <span className="relative z-10 text-xs font-semibold tracking-widest text-[#00CAFF] uppercase bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full self-start border border-[#00CAFF]/20">
+                    <span className="relative z-10 text-[10px] font-semibold tracking-wider text-[#00CAFF] uppercase bg-black/60 backdrop-blur-sm px-2.5 py-0.5 rounded-full self-start border border-[#00CAFF]/20">
                       {p.badge}
                     </span>
-                    <h4 className="relative z-10 text-2xl font-bold text-white group-hover:text-[#00CAFF] transition-colors duration-300">
+                    <h4 className="relative z-10 text-lg sm:text-xl font-bold text-white group-hover:text-[#00CAFF] transition-colors duration-300 leading-snug">
                       {p.title}
                     </h4>
                   </div>
-                  <div className="p-6">
-                    <p className="text-sm leading-6 text-[#94A3B8]">{p.description}</p>
-                    {p.techStack && p.techStack.length > 0 && (
-                      <div className="mt-4 flex flex-wrap gap-1.5">
-                        {p.techStack.map((tech: string) => (
-                          <span
-                            key={tech}
-                            className="text-[10px] font-semibold text-[#00CAFF] bg-[#00CAFF]/10 border border-[#00CAFF]/20 px-2.5 py-0.5 rounded-full"
-                          >
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                  <div className="p-4 sm:p-5">
+                    <p className="text-xs sm:text-sm leading-relaxed text-[#94A3B8]">{p.description}</p>
                   </div>
                 </div>
-                <div className="p-6 pt-0">
-                  <div className="flex gap-4">
+                <div className="p-4 sm:p-5 pt-0">
+                  <div className="flex gap-3">
                     <a
                       href={p.demoUrl || "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs font-semibold text-white bg-[#00CAFF]/10 border border-[#00CAFF]/20 py-2 px-4 rounded-lg hover:bg-[#00CAFF]/20 transition-all duration-300"
+                      className="text-xs font-semibold text-white bg-[#00CAFF]/10 border border-[#00CAFF]/20 py-1.5 px-3.5 rounded-lg hover:bg-[#00CAFF]/20 transition-all duration-300"
                     >
                       Live Demo
                     </a>
@@ -438,7 +426,7 @@ export default function Home() {
                       href={p.githubUrl || "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs font-semibold text-[#94A3B8] py-2 px-4 rounded-lg hover:text-white transition-all duration-300"
+                      className="text-xs font-semibold text-[#94A3B8] py-1.5 px-3.5 rounded-lg hover:text-white transition-all duration-300"
                     >
                       GitHub
                     </a>
