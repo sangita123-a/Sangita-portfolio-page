@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FaPlus, FaTrash, FaEdit, FaCode } from "react-icons/fa";
+import { getApiUrl } from "@/lib/apiConfig";
 
 interface Skill {
   id: string;
@@ -19,7 +20,7 @@ export default function AdminSkills() {
   const [form, setForm] = useState({ name: "", category: "Frontend", proficiency: 85 });
 
   const fetchSkills = () => {
-    fetch("/api/v1/skills")
+    fetch(getApiUrl("/api/v1/skills"))
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setSkills(data);
@@ -44,14 +45,15 @@ export default function AdminSkills() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const url = editingId ? `/api/v1/skills/${editingId}` : "/api/v1/skills";
+    const url = editingId ? getApiUrl(`/api/v1/skills/${editingId}`) : getApiUrl("/api/v1/skills");
     const method = editingId ? "PUT" : "POST";
+    const token = localStorage.getItem("token");
 
     await fetch(url, {
       method,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(form),
     });
@@ -62,9 +64,10 @@ export default function AdminSkills() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete skill?")) return;
-    await fetch(`/api/v1/skills/${id}`, {
+    const token = localStorage.getItem("token");
+    await fetch(getApiUrl(`/api/v1/skills/${id}`), {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
     fetchSkills();
   };
@@ -74,11 +77,11 @@ export default function AdminSkills() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Skills Manager</h1>
-          <p className="text-xs text-[#94A3B8] mt-1">Manage technical skills and proficiency percentages categorized cleanly.</p>
+          <p className="text-xs text-[#94A3B8] mt-1">Manage technical skills and proficiency percentages saved in PostgreSQL.</p>
         </div>
         <button
           onClick={openAdd}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#00CAFF] to-[#00E5FF] px-4 py-2.5 text-xs font-bold text-black shadow-[0_0_15px_rgba(0,202,255,0.3)] transition-all duration-300 hover:scale-[1.02]"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#00CAFF] to-[#00E5FF] px-4 py-2.5 text-xs font-bold text-black shadow-[0_0_15px_rgba(0,202,255,0.3)] transition-transform hover:scale-[1.02]"
         >
           <FaPlus size={12} /> Add Skill
         </button>
@@ -86,9 +89,9 @@ export default function AdminSkills() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {categories.map((cat) => {
-          const catSkills = skills.filter((s) => s.category.toLowerCase() === cat.toLowerCase());
+          const catSkills = skills.filter((s) => s.category?.toLowerCase() === cat.toLowerCase());
           return (
-            <div key={cat} className="bg-[#0B111E] border border-[#00CAFF]/15 rounded-2xl p-5 space-y-4">
+            <div key={cat} className="bg-[#0B111E] border border-[#00CAFF]/15 rounded-2xl p-5 space-y-4 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
               <h3 className="text-sm font-bold text-[#00CAFF] uppercase tracking-wider border-b border-[#00CAFF]/10 pb-2">
                 {cat} ({catSkills.length})
               </h3>
@@ -136,6 +139,7 @@ export default function AdminSkills() {
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="e.g. Next.js"
                   className="w-full rounded-xl bg-[#1F2937] border border-[#00CAFF]/20 px-3.5 py-2 text-xs text-white outline-none focus:border-[#00CAFF]"
                 />
               </div>
