@@ -81,7 +81,7 @@ app.post(["/api/projects", "/api/v1/projects"], async (req, res) => {
 
 app.put(["/api/projects/:id", "/api/v1/projects/:id"], async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const body = req.body;
     const updated = await prisma.project.update({
       where: { id },
@@ -95,7 +95,7 @@ app.put(["/api/projects/:id", "/api/v1/projects/:id"], async (req, res) => {
 
 app.delete(["/api/projects/:id", "/api/v1/projects/:id"], async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await prisma.project.delete({ where: { id } });
     res.json({ message: "Project deleted successfully" });
   } catch (error) {
