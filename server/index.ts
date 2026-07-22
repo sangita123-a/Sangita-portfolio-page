@@ -92,6 +92,30 @@ app.get(["/api/projects", "/api/v1/projects"], async (req, res) => {
     const showHidden = req.query.includeHidden === "true";
     const query = (req.query.query as string) || "";
 
+    try {
+      const foodiqExists = await prisma.project.findFirst({
+        where: { title: { contains: "Foodiq", mode: "insensitive" } },
+      });
+      if (!foodiqExists) {
+        await prisma.project.create({
+          data: {
+            title: "Foodiq",
+            slug: "foodiq",
+            badge: "Full Stack Food Delivery Platform",
+            description: "Foodiq is a modern food delivery platform inspired by Swiggy and Zomato. It includes restaurant discovery, trending dishes, food categories, offers, cart, authentication, responsive UI, and a premium user experience.",
+            techStack: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Node.js", "Express.js", "PostgreSQL", "Prisma", "JWT", "Socket.IO"],
+            thumbnailUrl: "/images/projects/foodiq-preview.png",
+            screenshots: ["/images/projects/foodiq-preview.png"],
+            demoUrl: "https://foodiq-ecru.vercel.app/",
+            githubUrl: "https://github.com/sangita123-a/foodiq",
+            featured: true,
+            hidden: false,
+            order: 2,
+          },
+        }).catch(() => {});
+      }
+    } catch {}
+
     const projects = await prisma.project.findMany({
       where: {
         AND: [
@@ -108,7 +132,18 @@ app.get(["/api/projects", "/api/v1/projects"], async (req, res) => {
       },
       orderBy: { order: "asc" },
     });
-    res.json(projects.length ? projects : initialProjects);
+
+    if (projects.length === 0 && !query) {
+      return res.json(initialProjects);
+    }
+
+    const hasFoodiq = projects.some((p) => p.title?.toLowerCase().includes("foodiq"));
+    if (!hasFoodiq && !query) {
+      const foodiqInitial = initialProjects.find((p) => p.title.toLowerCase().includes("foodiq"));
+      if (foodiqInitial) projects.push(foodiqInitial);
+    }
+
+    res.json(projects);
   } catch {
     res.json(initialProjects);
   }

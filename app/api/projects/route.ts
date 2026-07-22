@@ -11,6 +11,30 @@ export async function GET(req: NextRequest) {
 
     let projects: any[] = [];
     try {
+      // Auto-insert Foodiq into DB if missing
+      const foodiqExists = await prisma.project.findFirst({
+        where: { title: { contains: "Foodiq", mode: "insensitive" } },
+      });
+
+      if (!foodiqExists) {
+        await prisma.project.create({
+          data: {
+            title: "Foodiq",
+            slug: "foodiq",
+            badge: "Full Stack Food Delivery Platform",
+            description: "Foodiq is a modern food delivery platform inspired by Swiggy and Zomato. It includes restaurant discovery, trending dishes, food categories, offers, cart, authentication, responsive UI, and a premium user experience.",
+            techStack: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Node.js", "Express.js", "PostgreSQL", "Prisma", "JWT", "Socket.IO"],
+            thumbnailUrl: "/images/projects/foodiq-preview.png",
+            screenshots: ["/images/projects/foodiq-preview.png"],
+            demoUrl: "https://foodiq-ecru.vercel.app/",
+            githubUrl: "https://github.com/sangita123-a/foodiq",
+            featured: true,
+            hidden: false,
+            order: 2,
+          },
+        }).catch(() => {});
+      }
+
       projects = await prisma.project.findMany({
         where: {
           AND: [
@@ -33,6 +57,13 @@ export async function GET(req: NextRequest) {
 
     if (projects.length === 0 && !query) {
       return NextResponse.json(initialProjects);
+    }
+
+    // Ensure Foodiq is included in projects array
+    const hasFoodiq = projects.some((p) => p.title?.toLowerCase().includes("foodiq"));
+    if (!hasFoodiq && !query) {
+      const foodiqInitial = initialProjects.find((p) => p.title.toLowerCase().includes("foodiq"));
+      if (foodiqInitial) projects.push(foodiqInitial);
     }
 
     return NextResponse.json(projects);
@@ -58,8 +89,8 @@ export async function POST(req: NextRequest) {
         badge: body.badge || body.category || "Full Stack Web Application",
         description: body.description || "",
         techStack: Array.isArray(body.techStack) ? body.techStack : (body.techStack ? body.techStack.split(",").map((s: string) => s.trim()) : []),
-        thumbnailUrl: body.thumbnailUrl || body.imageUrl || "/foodiq-preview.png",
-        screenshots: body.screenshots || (body.thumbnailUrl ? [body.thumbnailUrl] : ["/foodiq-preview.png"]),
+        thumbnailUrl: body.thumbnailUrl || body.imageUrl || "/images/projects/foodiq-preview.png",
+        screenshots: body.screenshots || (body.thumbnailUrl ? [body.thumbnailUrl] : ["/images/projects/foodiq-preview.png"]),
         demoUrl: body.demoUrl || body.liveDemo || "#",
         githubUrl: body.githubUrl || body.github || "#",
         featured: body.featured ?? true,
